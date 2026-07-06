@@ -186,52 +186,73 @@ const questions = [
     }
 ];
 
-// --- LOGIQUE DU MOTEUR DU JEU ---
+// --- LOGIQUE DU MOTEUR DU JEU AMÉLIORÉ ---
 let monTitre = document.getElementById("zone-question");
 let monBoite = document.getElementById("zone-reponses");
 let reponseFinal = document.getElementById("feedback");
 
 let indexQuetion = 0;
-let score = 0; // Ajout d'un compteur de points !
+let score = 0; 
 
 function afficherQuestion() {
-    // Vérification : est-ce qu'on a fait le tour des 30 questions ?
+    // 1. Vérification : fin du jeu
     if (indexQuetion >= questions.length) {
-        monTitre.textContent = "🎮 Quiz Terminé !";
+        monTitre.innerHTML = "🎮 Quiz Terminé !";
         monBoite.innerHTML = "";
-        reponseFinal.textContent = `Ton score final est de : ${score} / ${questions.length} ! 🔥`;
-        return; // Arrête la fonction ici
+        reponseFinal.style.color = "#a6e3a1"; // Vert
+        reponseFinal.innerHTML = `Excellent travail ! 🎉<br>Ton score final est de : <span style="font-size: 2rem; display:block; margin-top:10px;">${score} / ${questions.length}</span>`;
+        return; 
     }
 
-    // 1. On affiche la question actuelle
-    monTitre.textContent = questions[indexQuetion].question;
+    // 2. Affichage de la question ET du score en temps réel tout en haut
+    monTitre.innerHTML = `
+        <div style="font-size: 0.9rem; color: #89b4fa; margin-bottom: 10px; font-weight: bold; text-transform: uppercase;">
+            Question ${indexQuetion + 1} / ${questions.length} — ⭐ Score : ${score}
+        </div>
+        <div style="font-size: 1.4rem;">
+            ${questions[indexQuetion].question}
+        </div>
+    `;
     
-    // 2. On vide l'écran des anciens boutons
+    // 3. On vide l'écran pour la nouvelle question
     monBoite.innerHTML = "";
 
-    // 3. On crée les nouveaux boutons pour cette question
+    // 4. Création des boutons
     questions[indexQuetion].choix.forEach(function(unChoix) {
         let nouveauBouton = document.createElement("button");
         nouveauBouton.textContent = unChoix;
         nouveauBouton.classList.add("btn-choix");
         monBoite.appendChild(nouveauBouton);
 
-        // On écoute le clic sur le bouton
+        // Écouteur de clic
         nouveauBouton.addEventListener('click', function() {
+            // Sécurité : On désactive tous les boutons pour éviter les doubles clics rapides
+            const tousLesBoutons = monBoite.querySelectorAll("button");
+            tousLesBoutons.forEach(btn => btn.disabled = true);
+
+            // Vérification de la réponse
             if (unChoix === questions[indexQuetion].bonneReponse) {
-                score++; // +1 point si c'est juste !
-                alert("Bravo ! 🎉"); 
+                score++; 
+                reponseFinal.textContent = "Bravo ! C'est juste ! 🎉";
+                reponseFinal.style.color = "#a6e3a1"; // Couleur verte
+                nouveauBouton.style.backgroundColor = "#a6e3a1"; // Le bouton cliqué devient vert
+                nouveauBouton.style.color = "#11111b";
             } else {
-                alert(`Dommage... La bonne réponse était : ${questions[indexQuetion].bonneReponse} ❌`);
+                reponseFinal.textContent = `Dommage... La bonne réponse était : ${questions[indexQuetion].bonneReponse} ❌`;
+                reponseFinal.style.color = "#f38ba8"; // Couleur rouge
+                nouveauBouton.style.backgroundColor = "#f38ba8"; // Le bouton cliqué devient rouge
+                nouveauBouton.style.color = "#11111b";
             }
 
-            // On passe à la question suivante
-            indexQuetion++;
-            // On relance la fonction pour mettre à jour l'écran !
-            afficherQuestion();
+            // On attend 1,5 seconde (1500 millisecondes) pour laisser le joueur voir le résultat
+            setTimeout(function() {
+                indexQuetion++;
+                reponseFinal.textContent = ""; // On efface le texte de feedback
+                afficherQuestion(); // On passe à la question suivante
+            }, 1500);
         });
     });
 }
 
-// Lancement du jeu au chargement de la page
+// Lancement du jeu
 afficherQuestion();
