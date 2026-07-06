@@ -67,3 +67,7 @@ h1 {
     color: #a6e3a1;
     text-align: center;
 }
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.8;
+}
